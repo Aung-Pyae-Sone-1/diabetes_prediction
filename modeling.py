@@ -52,12 +52,12 @@ def main():
             for metric in fold_scores[0]
         }})
 
-    # Lower RMSE means predicted chances were closer to the true 0/1 labels.
-    table = pd.DataFrame(rows).sort_values("RMSE").reset_index(drop=True)
+    # Lower Brier score means predicted probabilities were closer to the labels.
+    table = pd.DataFrame(rows).sort_values("Brier").reset_index(drop=True)
     print("\nFive-fold training comparison (mean scores):")
     print(table.to_string(index=False, float_format=lambda value: f"{value:.3f}"))
     winner = table.loc[0, "Model"]
-    print(f"\nChosen by lowest cross-validation RMSE: {winner}")
+    print(f"\nChosen by lowest cross-validation Brier score: {winner}")
 
     # Train the winner on all training rows and check the held-out test rows once.
     best_model = models[winner]
@@ -65,22 +65,27 @@ def main():
     test = evaluate_test(best_model, X_test, y_test)
     print("Test scores:", ", ".join(f"{key}={value:.3f}" for key, value in test.items()))
 
-    table.plot.bar(x="Model", y=["MAE", "RMSE"], rot=0, figsize=(8, 4))
-    plt.title("Five-fold mean errors (lower is better)")
-    plt.ylabel("Error")
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+    table.plot.bar(x="Model", y=["Recall", "Specificity"], rot=0, ax=axes[0])
+    axes[0].set_title("Five-fold mean rates (higher is better)")
+    axes[0].set_ylabel("Score")
+    axes[0].set_ylim(0, 1)
+    table.plot.bar(x="Model", y="Brier", rot=0, ax=axes[1], legend=False)
+    axes[1].set_title("Five-fold mean Brier score (lower is better)")
+    axes[1].set_ylabel("Brier score")
     plt.tight_layout()
-    plt.savefig("doc/model_results/model_comparison.png")
-    plt.close()
+    fig.savefig("doc/model_results/model_comparison.png")
+    plt.close(fig)
 
     # Save exact numbers so the result can be read without running Python.
     table.to_csv("doc/model_results/cross_validation_results.csv", index=False, float_format="%.4f")
     with open("doc/model_results/model_winner.txt", "w") as file:
-        file.write("Five-fold training means (lower MAE/RMSE, higher R2/Accuracy):\n")
+        file.write("Five-fold training means (higher Recall/Specificity, lower Brier):\n")
         file.write(table.to_string(index=False, float_format=lambda value: f"{value:.3f}"))
-        file.write(f"\n\nWinner by lowest CV RMSE: {winner}\n")
+        file.write(f"\n\nWinner by lowest CV Brier score: {winner}\n")
         file.write("Held-out test scores: " + ", ".join(
             f"{key}={value:.3f}" for key, value in test.items()) + "\n")
-        file.write("The target is Positive=1, Negative=0; MAE/RMSE/R2 score probabilities.\n")
+        file.write("Positive=1, Negative=0; Recall/Specificity use a 0.5 cutoff; Brier scores probabilities.\n")
 
 
 if __name__ == "__main__":

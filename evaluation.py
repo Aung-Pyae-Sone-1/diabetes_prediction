@@ -6,15 +6,16 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import brier_score_loss, recall_score
 
 def scores(y_true, probability):
-    # Compare the true 0/1 label with the predicted chance of Positive.
+    # Recall and specificity use the same 0.5 cutoff as the confusion matrix.
+    probability = np.asarray(probability)
+    predicted = probability >= 0.5
     return {
-        "MAE": mean_absolute_error(y_true, probability),
-        "RMSE": np.sqrt(mean_squared_error(y_true, probability)),
-        "R2": r2_score(y_true, probability),
-        "Accuracy": accuracy_score(y_true, probability >= 0.5),
+        "Recall": recall_score(y_true, predicted, pos_label=1, zero_division=0),
+        "Specificity": recall_score(y_true, predicted, pos_label=0, zero_division=0),
+        "Brier": brier_score_loss(y_true, probability),
     }
 
 

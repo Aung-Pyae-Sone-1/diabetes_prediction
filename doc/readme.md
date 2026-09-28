@@ -30,10 +30,20 @@ python modeling.py
 | --- | --- | --- |
 | `eda.py` | Counts rows, missing values, duplicate rows, and classes; charts class counts and symptom shares. | `doc/eda_results/` |
 | `cleaning.py` | Encodes `Positive`/`Negative`, gender, and Yes/No answers as numbers; rejects missing or unexpected answers. | Data returned to `modeling.py`; summary when run alone |
-| `modeling.py` | Reserves a stratified 20% test set, compares three models with five stratified training folds, and selects the lowest mean RMSE. | `doc/model_results/` |
+| `modeling.py` | Reserves a stratified 20% test set, compares three models with five stratified training folds, and selects the lowest mean Brier score. | `doc/model_results/` |
 | `evaluation.py` | Scores the chosen model on the held-out test set and plots a confusion matrix at a 0.5 probability cutoff. | `doc/evaluation_result/test_predictions.png` |
 
-The models are logistic regression, random forest, and gradient boosting. MAE, RMSE, and R² compare predicted probabilities with the 0/1 class labels. Accuracy and the confusion matrix use a 0.5 cutoff. The test set is used only after model selection.
+The models are logistic regression, random forest, and gradient boosting. The test set is used only after model selection.
+
+### Evaluation metrics
+
+| Metric | Meaning | Better direction |
+| --- | --- | --- |
+| Recall (sensitivity) | Share of actual Positive rows predicted Positive at a 0.5 probability cutoff. | Higher |
+| Specificity | Share of actual Negative rows predicted Negative at the same cutoff. | Higher |
+| Brier score | Mean squared difference between the predicted Positive probability and the 0/1 label. | Lower |
+
+The models are ranked by mean Brier score across the five validation folds because this project predicts probabilities. Recall and specificity show the tradeoff between missed positives and false alarms at the fixed 0.5 cutoff. For one set of predictions, Brier score equals the square of the previously used RMSE. Averaging each metric across folds can produce different rankings.
 
 ## Duplicate-row experiment
 
@@ -45,8 +55,8 @@ Identical rows can appear across training, validation, and test splits when dupl
 
 ## Saved results
 
-The existing [`model_winner.txt`](model_results/model_winner.txt) reports random forest as the winner by five-fold mean RMSE, with held-out test MAE **0.209**, RMSE **0.292**, R² **0.605**, and accuracy **0.902**. These files reflect the last run and are overwritten when the code is rerun; check the duplicate setting in `cleaning.py` when interpreting them.
+The current [`model_winner.txt`](model_results/model_winner.txt) reports random forest as the winner by five-fold mean Brier score. With duplicate removal commented out, its held-out test scores are **recall 0.969**, **specificity 1.000**, and **Brier 0.019**. These files are overwritten when the code is rerun. Because this run retains duplicates, identical rows may appear in both training and test data; do not treat these scores as an estimate of performance on distinct responses.
 
 - [`cross_validation_results.csv`](model_results/cross_validation_results.csv): mean scores for each model
-- [`model_comparison.png`](model_results/model_comparison.png): mean MAE and RMSE chart
+- [`model_comparison.png`](model_results/model_comparison.png): mean recall, specificity, and Brier score charts
 - [`test_predictions.png`](evaluation_result/test_predictions.png): held-out test confusion matrix
