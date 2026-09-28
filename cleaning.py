@@ -9,9 +9,12 @@ def load_data():
 
     # Treat identical survey rows as repeated records. Keep one copy so the
     # same answers cannot appear in both training and test data.
+    '''
     before = len(data)
     data = data.drop_duplicates().copy()
     print(f"Removed {before - len(data)} exact duplicate rows; {len(data)} rows remain.")
+    '''
+    #commented out for experimental purposes
 
     # X means input columns; y means the answer we want to predict.
     # The target is 1 for Positive and 0 for Negative.
