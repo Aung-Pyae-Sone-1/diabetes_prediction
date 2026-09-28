@@ -1,7 +1,7 @@
 """Step 1: look at the data before building models."""
 
 from pathlib import Path
-
+Path("doc/eda_results").mkdir(exist_ok=True)
 import matplotlib
 matplotlib.use("Agg")  # Save charts as files, even without a display.
 import matplotlib.pyplot as plt
@@ -10,7 +10,6 @@ import pandas as pd
 
 def main():
     data = pd.read_csv("doc/diabetes_data_upload.csv")
-    Path("doc/eda_results").mkdir(exist_ok=True)
 
     # Check size, empty cells, repeated rows, and target balance.
     print(f"Rows: {len(data)}; columns: {len(data.columns)}")

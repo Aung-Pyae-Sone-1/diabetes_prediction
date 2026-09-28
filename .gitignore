@@ -2,3 +2,5 @@
 __pycache__/
 .DS_Store
 doc/eda_results/
+doc/model_results/
+doc/evaluation_result/
